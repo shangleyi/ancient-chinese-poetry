@@ -17,7 +17,7 @@ import tensorflow as tf
 
 
 _BATCH_SIZE = 64
-_NUM_UNITS = 512
+_NUM_UNITS = 300
 BEAM_SIZE = 10
 
 _model_path = os.path.join(save_dir, 'model')
@@ -209,15 +209,18 @@ class Generator(Singleton):
         prob_list = self._gen_prob_list(probs, current_context, pron_dict)
         return prob_list, state
 
-    def _return_most_likely(self,prob_list):
+    def _return_n_most_likely(self,prob_list,number):
         max = 0
         used_index = 0
-        for j, prob in enumerate(prob_list):
-            if max < prob:
-                char = self.char_dict.int2char(j)
-                max = prob
-                score = -math.log(max)
-                used_index = j
+        while number > 0:
+            for j, prob in enumerate(prob_list):
+                if max < prob:
+                    char = self.char_dict.int2char(j)
+                    max = prob
+                    score = -math.log(max)
+                    used_index = j
+            prob_list[used_index] = 0
+            number -= 1
         return char, score, used_index
 
     def generate(self, keywords):
@@ -233,10 +236,13 @@ class Generator(Singleton):
 
             # provide a random hint to the first sentence to avoid generating the same thing
             hint = keywords.pop(randrange(len(keywords)))
-            first_sentence = True
+
+            first_line = True
             for keyword in keywords:
-                if first_sentence:
+                if first_line:
                     context += hint
+                    first_line = False
+
                 keyword_data, keyword_length = self._fill_np_matrix(
                         [keyword] * _BATCH_SIZE)
                 context_data, context_length = self._fill_np_matrix(
@@ -268,7 +274,7 @@ class Generator(Singleton):
                                     char_array[i] = self.char_dict.int2char(j)
                                     score_array[i] *= -math.log(prob_list[j])
                                     break
-                            # because we took the negative log we need the minimum prob
+                        # because we took the negative log we need the minimum prob
                         min_value = 1000
                         min_index = 0
                         for k in range(len(score_array)):
@@ -306,7 +312,7 @@ class Generator(Singleton):
 
                         # TODO: choose the five most possible choices
                         for i in range(BEAM_SIZE):
-                            char_array[i], score, used_index = self._return_most_likely(prob_list)
+                            char_array[i], score, used_index = self._return_n_most_likely(prob_list,1)
                             score_array[i] *= score
                             # make sure that the same thing is not selected again
                             prob_list[used_index] = 0
@@ -317,13 +323,18 @@ class Generator(Singleton):
                             current_context = context + char_array[i]
                             prob_list, state = self._compute_prob_list(char_array[i],keyword_data,keyword_length,\
                                 context_data,context_length,current_context,state,session,pron_dict)
-                            second_char_array[i], score, used_index = self._return_most_likely(prob_list)
-                            score_array[i] *= score
+                            second_char_array[i], score, used_index = self._return_n_most_likely(prob_list,1)
+                            # randomly sample second array and make sure it does not repeat
+                            # random_sample = second_char_array[randrange(len(second_char_array))]
+                            random_sample = second_char_array[i]
+                            used_chars = set(ch for ch in context)
+                            tmp = 2
 
-                        # adjust so that the same char does not appear too often
-                        for pointer in range(len(char_array)):
-                            if (char_array[pointer] == second_char_array[pointer]):
-                                score_array[pointer] = 1000
+                            while(random_sample == char_array[i] or random_sample in used_chars):
+                                second_char_array[i], score, used_index = self._return_n_most_likely(prob_list,tmp)
+                                random_sample = second_char_array[i]
+                                tmp += 1
+                            score_array[i] *= score
 
                         # because we took the negative log the minimum score is the best
                         min_value = 1000
@@ -335,33 +346,31 @@ class Generator(Singleton):
                         
                         # adjust so that we prevent using the same character again and again
                         used_chars = set(ch for ch in context)
-                        min_index_init = min_index
-                        avoid_possible = False
-                        for _ in range(len(char_array)):
-                            if (char_array[min_index] in used_chars) or (second_char_array[min_index] in used_chars):
-                                score_array[min_index] = 1000
-                                min_value = 1000
-                                for i in range(len(score_array)):
-                                    if score_array[i] < min_value:
-                                        min_index = i
-                                        min_value = score_array[i]
-                            else:
-                                avoid_possible = True
-                                break
+                        first_char = char_array[min_index]
+                        in_loop = 0
+                        
+                        while first_char in used_chars and in_loop < len(char_array):
+                            score_array[min_index] = 1000
+                            min_value = 1000
+                            for i in range(len(score_array)):
+                                # find the minimum in the remaining
+                                if score_array[i] < min_value:
+                                    min_index = i
+                                    min_value = score_array[i]
+                            first_char = char_array[min_index]
+                            in_loop += 1
 
-                        if not avoid_possible:
-                            min_index = min_index_init
+                        first_char = char_array[min_index]
+                        second_char = second_char_array[min_index]
 
-                        context += char_array[min_index]
-                        char = second_char_array[min_index]
-                        context += char
+                        context += first_char
+                        context += second_char
+                        char = second_char
                         word_count += 2
-                # remove the hint
-                if first_sentence:
-                    context = context[0] + context[len(hint) + 1:]
-                first_sentence = False
                 # append the <END> label
                 context += end_of_sentence()
+            # remove the extra hint
+            context = context[0] + context[len(hint) + 1:]
         return context[1:].split(end_of_sentence())
 
     def _gen_prob_list(self, probs, context, pron_dict):
