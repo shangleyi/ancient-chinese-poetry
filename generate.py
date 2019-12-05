@@ -242,13 +242,15 @@ class Generator(Singleton):
                 context_data, context_length = self._fill_np_matrix(
                         [context] * _BATCH_SIZE)
                 char = start_of_sentence()
-                # TODO: implement beam search
+
                 word_count = 0
                 state = ''
                 while word_count < 7:
                     prob_list, state = self._compute_prob_list(char,keyword_data,keyword_length,\
                         context_data,context_length,context,state,session,pron_dict)
-                    # randomly select BEAM_SIZE numbers and choose the highest probability
+                    
+                    # randomly sample BEAM_SIZE number of characters and choose the highest probability
+                    # generates different poems when given different keywords
                     if word_count == 0:
                         prob_sums = np.cumsum(prob_list)
                         # the array which store the first char
@@ -274,6 +276,17 @@ class Generator(Singleton):
                                 min_index = k
                                 min_value = score_array[k]
                         char = char_array[min_index]
+                        
+                        # generates the same poem for the same keywords
+                        '''
+                        max_value = prob_list[0]
+                        max_index = 0
+                        for k in range(len(prob_list)):
+                            if prob_list[k] > max_value:
+                                max_index = k
+                                max_value = prob_list[k]
+                        char = self.char_dict.int2char(max_index)
+                        '''
                         context += char
                         word_count += 1
                         # end of first word
