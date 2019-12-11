@@ -1,4 +1,4 @@
-# ancient-chinese-poetry
+# Ancient Chinese Poetry
 
 Natural language processing challenge. Generate ancient chinese poems based on input query.
 
@@ -7,7 +7,7 @@ Natural language processing challenge. Generate ancient chinese poems based on i
 <li>Modification: loading pretrained model, random sampling, beam search, context addition</li>
 <li>Author: Leyi Shang</li>
 
-# future work
+# Future work
 
 Improve the link between the keyword and the sentences generated.
 
