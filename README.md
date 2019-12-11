@@ -2,8 +2,8 @@
 
 Natural language processing challenge. Generate ancient chinese poems based on input query.
 
-code developed based on: https://github.com/DevinZ1993/Chinese-Poetry-Generation
-embedding model downloaded from: https://github.com/Embedding/Chinese-Word-Vectors
+<li>code developed based on: https://github.com/DevinZ1993/Chinese-Poetry-Generation</li>
+<li>embedding model downloaded from: https://github.com/Embedding/Chinese-Word-Vectors</li>
 
 # future work
 
