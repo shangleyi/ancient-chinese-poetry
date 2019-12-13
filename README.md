@@ -3,7 +3,7 @@
 Natural language processing challenge. Generate ancient chinese poems based on input query.
 
 <li>Code developed based on: https://github.com/DevinZ1993/Chinese-Poetry-Generation</li>
-<li>Modified char2vec.py, plan.py and generate.py</li>
+<li>Modified char2vec.py and generate.py</li>
 <li>Embedding model downloaded from: https://github.com/Embedding/Chinese-Word-Vectors</li>
 <li>Modification: loading pretrained model, random sampling, beam search, context addition</li>
 <li>Author: Leyi Shang</li>
