@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Author: Devin Zuo(baseline), Leyi Shang(modification line 213-375
 
 from char2vec import Char2Vec
 from char_dict import CharDict, end_of_sentence, start_of_sentence
