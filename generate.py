@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding:utf-8 -*-
-# Author: Devin Zuo(baseline), Leyi Shang(modification line 213-375
+# Author: Devin Zuo(baseline), Leyi Shang(modification line 213-375)
 
 from char2vec import Char2Vec
 from char_dict import CharDict, end_of_sentence, start_of_sentence
@@ -213,6 +213,8 @@ class Generator(Singleton):
     def _return_n_most_likely(self,prob_list,number):
         max = 0
         used_index = 0
+        char = ''
+        score = 1
         while number > 0:
             for j, prob in enumerate(prob_list):
                 if max < prob:
@@ -221,6 +223,7 @@ class Generator(Singleton):
                     score = -math.log(max)
                     used_index = j
             prob_list[used_index] = 0
+            max = 0
             number -= 1
         return char, score, used_index
 
@@ -311,9 +314,9 @@ class Generator(Singleton):
                         
                         max = 0
 
-                        # TODO: choose the five most possible choices
+                        # choose the BEAM_SIZE most possible choices
                         for i in range(BEAM_SIZE):
-                            char_array[i], score, used_index = self._return_n_most_likely(prob_list,1)
+                            char_array[i], score, used_index = self._return_n_most_likely(prob_list,i+1)
                             score_array[i] *= score
                             # make sure that the same thing is not selected again
                             prob_list[used_index] = 0
@@ -329,6 +332,7 @@ class Generator(Singleton):
                             # random_sample = second_char_array[randrange(len(second_char_array))]
                             random_sample = second_char_array[i]
                             used_chars = set(ch for ch in context)
+
                             tmp = 2
 
                             while(random_sample == char_array[i] or random_sample in used_chars):
