@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 #-*- coding:utf-8 -*-
+# Author: Devin Zuo(baseline), Leyi Shang(modification line 52)
 
 from data_utils import gen_train_data
 from gensim import models
