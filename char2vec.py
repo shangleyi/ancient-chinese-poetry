@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding:utf-8 -*-
-# https://github.com/Embedding/Chinese-Word-Vectors
+# embedding from: https://github.com/Embedding/Chinese-Word-Vectors
+# Author: Devin Zuo(baseline), Leyi Shang(modification line 35-75)
 
 from char_dict import CharDict
 from gensim import models
@@ -26,21 +27,9 @@ def _gen_char2vec():
     char_dict = CharDict()
 
     '''
-    # construct one-hot vector
-    one_hot = []
-    for i in range (len(char_dict)):
-        one_word = []
-        for j in range (len(char_dict)):
-            if j == i:
-                one_word.append(1)
-            else:
-                one_word.append(0)
-        one_hot.append(one_word)
-
-    # embedding = uniform(-1.0, 1.0, [len(char_dict), CHAR_VEC_DIM])
     # poems = Poems()
     '''
-    # TODO: change this line of code to use another model
+    # change this line of code to use another model
     # model = models.Word2Vec(poems, size = CHAR_VEC_DIM, min_count = 5)
     embedding = uniform(-1.0, 1.0, [len(char_dict), CHAR_VEC_DIM])
     vocab_count = 0
